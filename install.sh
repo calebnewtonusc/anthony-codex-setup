@@ -145,13 +145,14 @@ fi
 # ── 2. Skills, symlinked into ~/.agents/skills where Codex reads them ───────
 # Download one repo as a tarball. codeload's HEAD needs no branch name, and the repo
 # path is checked against a strict pattern, so nothing from the network reaches a shell
-# string. A second run refreshes the copy.
+# string. A second run refreshes the copy. An optional third argument pins a commit.
 fetch_repo() {
-  local name="$1" repo="$2" dir="$VENDOR/$1"
+  local name="$1" repo="$2" ref="${3:-HEAD}" dir="$VENDOR/$1"
   case "$repo" in *[!A-Za-z0-9._/-]*) warn "bad repo $repo"; return 1 ;; esac
+  case "$ref" in HEAD) ;; *[!0-9a-f]*) warn "bad ref $ref"; return 1 ;; esac
   if [ "$DRY_RUN" = 1 ]; then run "download github.com/$repo into $dir"; return 0; fi
   local t; t="$(mktemp -d)"
-  if curl -fsSL "https://codeload.github.com/$repo/tar.gz/HEAD" | tar xz -C "$t" --strip-components 1; then
+  if curl -fsSL "https://codeload.github.com/$repo/tar.gz/$ref" | tar xz -C "$t" --strip-components 1; then
     rm -rf "$dir" && mv "$t" "$dir"; return 0
   fi
   rm -rf "$t"
@@ -178,7 +179,8 @@ if [ "$DO_SKILLS" = 1 ]; then
   [ "$DRY_RUN" = 0 ] && cp -R "$HERE"/skills/. "$SETUP_DIR/skills/"
   for d in "$HERE"/skills/*/; do n="$(basename "$d")"; link_skill "$SETUP_DIR/skills/$n" "$n"; done
   fetch_repo no-ai-slop petergyang/no-ai-slop && link_skill "$VENDOR/no-ai-slop/skills/no-ai-slop" no-ai-slop
-  fetch_repo avoid-ai-writing conorbronsdon/avoid-ai-writing && link_skill "$VENDOR/avoid-ai-writing" avoid-ai-writing
+  # ai-scan require()s this repo's detector, so it runs as code: pinned, never HEAD.
+  fetch_repo avoid-ai-writing conorbronsdon/avoid-ai-writing 209815cdeb4af942616daec89a5e0a706c804e3a && link_skill "$VENDOR/avoid-ai-writing" avoid-ai-writing
   fetch_repo carlton-skills 31Carlton7/skills && link_skill "$VENDOR/carlton-skills/deslop" deslop
   fetch_repo humanizer blader/humanizer && link_skill "$VENDOR/humanizer" humanizer
   fetch_repo anthropic-skills anthropics/skills \
