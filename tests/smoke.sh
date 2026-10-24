@@ -9,12 +9,15 @@ fail() { echo "FAIL: $*"; exit 1; }
 
 bash -n "$HERE/install.sh"
 for f in "$HERE"/bin/agent-check "$HERE"/bin/agent-hook-init; do bash -n "$f"; done
-python3 -m py_compile "$HERE/bin/slop-check" "$HERE/bin/code-slop" "$HERE/lib/merge_codex.py" "$HERE/codex/hooks/slop-after-edit.py"
+PYTHONPYCACHEPREFIX="$T/pyc" python3 -m py_compile "$HERE/bin/slop-check" "$HERE/bin/code-slop" "$HERE/lib/merge_codex.py" "$HERE/codex/hooks/slop-after-edit.py"
 for d in "$HERE"/skills/*/; do [ -f "$d/SKILL.md" ] || fail "missing SKILL.md in $d"; done
 
 # 1. Dry run writes nothing.
 mkdir "$T/dry"
 HOME="$T/dry" CODEX_HOME="$T/dry/.codex" bash "$HERE/install.sh" --dry-run --no-prereqs >"$T/dry.txt" 2>&1 || { cat "$T/dry.txt"; fail "dry run exited nonzero"; }
+# Rosetta writes ~/.cache/rosetta when an amd64 container runs on an Apple Silicon Mac
+# (seen 2026-10-24 testing this in Docker), so that one folder isn't the installer's.
+rm -rf "$T/dry/.cache/rosetta"; rmdir "$T/dry/.cache" 2>/dev/null || true
 [ -z "$(ls -A "$T/dry")" ] || { ls -A "$T/dry"; fail "dry run wrote files"; }
 
 # 2. Real run into an empty HOME.
@@ -27,6 +30,7 @@ for s in debugging reviewing-changes shipping interface repo-health deep-researc
   [ -f "$H/.agents/skills/$s/SKILL.md" ] || { cat "$T/first.txt"; fail "skill $s not installed"; }
 done
 for b in agent-check slop-check code-slop ai-scan agent-hook-init; do [ -x "$H/.local/bin/$b" ] || fail "$b not on PATH"; done
+[ ! -e "$H/.local/bin/__pycache__" ] || fail "a cache folder was linked as a command"
 grep -q "anthony-codex-setup:start" "$H/.codex/AGENTS.md" || fail "AGENTS.md block missing"
 python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert any("slop-after-edit" in h["command"] for g in d["hooks"]["PostToolUse"] for h in g["hooks"])' "$H/.codex/hooks.json" || fail "hook missing"
 grep -q "^hooks = true" "$H/.codex/config.toml" || fail "hooks flag missing"

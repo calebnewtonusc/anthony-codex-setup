@@ -230,10 +230,12 @@ if [ "$DO_CONFIG" = 1 ]; then
   bold "4. Checks, AGENTS.md, hooks"
   run mkdir -p "$SETUP_DIR/bin" "$SETUP_DIR/hooks" "$LOCAL_BIN"
   if [ "$DRY_RUN" = 0 ]; then
-    cp "$HERE"/bin/* "$SETUP_DIR/bin/" && chmod +x "$SETUP_DIR"/bin/*
-    cp "$HERE"/codex/hooks/* "$SETUP_DIR/hooks/"
+    for f in "$HERE"/bin/* "$HERE"/codex/hooks/*; do [ -f "$f" ] || continue
+      case "$f" in */codex/hooks/*) cp "$f" "$SETUP_DIR/hooks/" ;; *) cp "$f" "$SETUP_DIR/bin/" ;; esac; done
+    chmod +x "$SETUP_DIR"/bin/*
   fi
   for f in "$HERE"/bin/*; do
+    [ -f "$f" ] || continue
     n="$(basename "$f")" dst="$LOCAL_BIN/$(basename "$f")"
     if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$SETUP_DIR/bin/$n" ]; then have "$n"
     elif [ -e "$dst" ] || [ -L "$dst" ]; then have "$n (you already have one, left alone)"

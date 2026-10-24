@@ -5,7 +5,8 @@ Codex sends the hook payload as JSON on stdin. An apply_patch call carries every
 file it touched inside one patch, so the paths come from its "*** Add File:",
 "*** Update File:" and "*** Move to:" lines. Prose goes through slop-check and code
 through code-slop. Findings go back as additionalContext, so the agent fixes them
-on its next step. It never blocks an edit, and any error exits 0 with no output.
+on its next step. It never blocks an edit: an error is appended to hook-errors.log
+next to the checks, and the hook exits 0 so Codex carries on.
 """
 
 import json
@@ -74,6 +75,10 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
-        pass
+    except Exception as error:
+        try:
+            with open(BIN.parent / "hook-errors.log", "a") as log:
+                log.write(f"{type(error).__name__}: {error}\n")
+        except OSError:
+            print(f"slop hook failed: {error}", file=sys.stderr)
     sys.exit(0)
