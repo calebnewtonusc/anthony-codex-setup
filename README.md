@@ -5,14 +5,40 @@ same checks as the rest of the team: no em dashes, no AI-sounding prose, no
 narration comments, typecheck green before every commit. It merges into whatever
 `~/.codex` you already have and never overwrites your files. No sudo.
 
-## Install
+## Start here: where you type
+
+This is for the Codex CLI in a terminal on your Linux laptop (Ctrl+Alt+T opens one
+on Ubuntu). Not chatgpt.com, and not Codex cloud at chatgpt.com/codex: both run on
+OpenAI's servers, can't see your laptop's files or `~/.codex`, and will send you to
+connect GitHub instead. You don't need that.
+
+Paste this into the terminal. It downloads this repo and runs the whole setup,
+including installing Codex itself, so you don't need Codex first:
 
 ```bash
 mkdir -p ~/code/anthony-codex-setup && curl -fsSL https://codeload.github.com/calebnewtonusc/anthony-codex-setup/tar.gz/HEAD | tar xz -C ~/code/anthony-codex-setup --strip-components 1 && cd ~/code/anthony-codex-setup && ./install.sh
 ```
 
-Or paste [SETUP-FOR-CODEX.md](SETUP-FOR-CODEX.md) into Codex and it does every step.
-`./install.sh --dry-run` previews. Running it twice adds nothing the second time.
+It stops for you in two places, and each one opens a browser window that can land
+behind the terminal. If nothing seems to happen, Alt-Tab to the browser.
+
+- **GitHub sign-in.** It shows a code like `ABCD-1234`. Copy it, press Enter, sign
+  in to github.com in the browser if it asks, paste the code, click Authorize.
+  With no desktop browser, open https://github.com/login/device on your phone.
+  Once you're signed in, it accepts any pending GitHub invites from Caleb for you.
+- **Codex sign-in**, the first time you run `codex`. Pick Sign in with ChatGPT and
+  finish in the browser tab it opens.
+
+Then run `codex` in the terminal, and when it asks whether to trust the new
+anthony-codex-setup hook, say yes. If the setup stopped partway or printed anything
+under "Problems", paste [SETUP-FOR-CODEX.md](SETUP-FOR-CODEX.md) into `codex` and it
+finishes the job, then writes a PDF of every snag to `~/Downloads` for you to send
+to Caleb.
+
+## Install
+
+The line under "Start here" is the whole install. `./install.sh --dry-run`
+previews. Running it twice adds nothing the second time.
 
 ## What you get
 

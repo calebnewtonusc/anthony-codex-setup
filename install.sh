@@ -127,11 +127,22 @@ if [ "$DO_PREREQS" = 1 ]; then
   done
   if gh auth status >/dev/null 2>&1; then have "gh signed in"
   elif [ "$DRY_RUN" = 0 ] && [ -t 0 ] && command -v gh >/dev/null 2>&1; then
-    echo "  GitHub sign-in: copy the code below, then press Enter to open the browser"
+    echo "  Heads up: GitHub sign-in happens in your web browser, which can open behind this terminal."
+    echo "  Copy the code it shows (like ABCD-1234), press Enter, then switch to the browser (Alt-Tab)."
+    echo "  Sign in to github.com there if it asks, paste the code, click Authorize, and come back here."
+    echo "  With no desktop browser, open https://github.com/login/device on your phone instead."
     gh auth login --web -h github.com -p https && ok "gh signed in" || warn "gh sign-in didn't finish: gh auth login --web"
   else todo "GitHub: gh auth login --web"; fi
+  # Accept any pending invite from the repo owner, so nobody has to find the invite
+  # page in a browser (a missed invite cost a teammate an hour on 2026-10-27).
+  if [ "$DRY_RUN" = 0 ] && gh auth status >/dev/null 2>&1; then
+    for id in $(gh api user/repository_invitations --jq '.[] | select(.repository.owner.login=="calebnewtonusc") | .id' 2>/dev/null); do
+      case "$id" in *[!0-9]*) continue ;; esac
+      gh api -X PATCH "user/repository_invitations/$id" >/dev/null 2>&1 && ok "accepted a GitHub invite from calebnewtonusc ($id)" || warn "couldn't accept GitHub invite $id"
+    done
+  fi
   if [ "$DRY_RUN" = 0 ] && command -v codex >/dev/null 2>&1 && [ ! -f "$CODEX_DIR/auth.json" ]; then
-    todo "Codex: run codex once and sign in with ChatGPT (or set OPENAI_API_KEY)"
+    todo "Codex: run codex in a terminal and pick Sign in with ChatGPT. It opens a browser tab, which can land behind the terminal (or set OPENAI_API_KEY)"
   fi
 fi
 

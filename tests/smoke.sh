@@ -72,4 +72,18 @@ bad = [str(p) for p in pathlib.Path(sys.argv[1]).rglob("*")
 print("\n".join(bad))
 sys.exit(1 if bad else 0)
 PY
+# 7. Docs match what ships. A teammate's guide once described a layout its target repo
+# had moved off, and another pasted the setup into a chat that couldn't touch his
+# laptop, so the docs are checked against the installer here.
+if find "$HERE" -path "$HERE/.git" -prune -o -type l -print | grep .; then fail "symlink in the repo (dead on anyone else's laptop)"; fi
+LINE='curl -fsSL https://codeload.github.com/calebnewtonusc/anthony-codex-setup/tar.gz/HEAD'
+grep -qF "$LINE" "$HERE/README.md" || fail "README lost the one-line setup"
+grep -qF "$LINE" "$HERE/SETUP-FOR-CODEX.md" || fail "SETUP-FOR-CODEX.md downloads the repo a different way than the README"
+grep -q 'Not chatgpt.com' "$HERE/README.md" || fail "README lost the which-app step"
+for f in $(sed -n '/^Usage:/,/^Environment:/p' "$HERE/install.sh" | grep -oE -- '--[a-z-]+'); do
+  grep -qF -- "$f" "$HERE/README.md" || fail "README doesn't mention $f"
+done
+for s in debugging reviewing-changes shipping interface deep-research repo-health hackathon stack-rules grilling openspec reflect skill-forge graph-engineering clone-site no-ai-slop avoid-ai-writing humanizer deslop pdf docx xlsx webapp-testing mcp-builder skill-creator; do
+  [ -f "$HERE/skills/$s/SKILL.md" ] || grep -q -- "$s" "$HERE/install.sh" || fail "README lists skill $s that nothing installs"
+done
 echo "smoke ok"

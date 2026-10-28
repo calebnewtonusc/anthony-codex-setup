@@ -1,6 +1,9 @@
 # Prompt: set up Codex on my laptop from this repo
 
-Paste everything below the line into Codex.
+Paste everything below the line into the Codex CLI (`codex` in a terminal on your
+laptop, not chatgpt.com or Codex cloud, which can't see your files). If `codex`
+isn't installed yet, run the one line in the README's "Start here" first; it
+installs Codex.
 
 ---
 
@@ -19,13 +22,19 @@ I'm on Linux. Do every step yourself and only stop for things that need my hands
    `slop-check --help` and `code-slop --help` run, `~/.codex/hooks.json` is valid
    JSON, and `~/.codex/AGENTS.md` has the anthony-codex-setup block.
 7. Run `bash tests/smoke.sh` and show me its last line.
-8. If `gh auth status` fails, run `gh auth login --web` and wait for me to finish in
-   the browser.
-9. In the hackathon repo (`~/code/anchored` or wherever I cloned it), run
-   `git config core.hooksPath .githooks` and then `agent-check --no-tsc` once to
-   prove the checks run.
+8. If `gh auth status` fails, tell me a browser window is about to open and may
+   land behind the terminal, run `gh auth login --web -h github.com -p https`,
+   show me the code, and wait for me to finish in the browser. Then accept any
+   pending invites from calebnewtonusc yourself with
+   `gh api user/repository_invitations` and `gh api -X PATCH user/repository_invitations/<id>`.
+   Never send me to a browser for something `gh` can do.
+9. If `~/code/anchored` doesn't exist, run `gh repo clone calebnewtonusc/anchored ~/code/anchored`.
+   In it, run `git config core.hooksPath .githooks` and then `agent-check --no-tsc`
+   once to prove the checks run.
 10. Finish with two short lists: logins I still need, with the exact step for
     each, and anything that failed, with the error.
+11. Write a PDF to `~/Downloads/anthony-codex-setup snags.pdf` listing every snag
+    we hit, in order: what I saw, what caused it, what fixed it. I'll send it to Caleb.
 
 Tell me to restart Codex at the end so it loads the skills, AGENTS.md and the hook,
 and to trust the new hook when Codex asks. Never put a token or password in a file.
